@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Spend Calculator and Manager</title>
+    <!-- Add bootstrap CSS -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+<!-- Add bootstrap JavaScript -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    <style>
+        /* Page Container */
+        .container {
+            max-width: 75vw;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Input Form */
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #cccccc;
+        }
+
+        /* Input Fields */
+        input[type="text"],
+        input[type="number"],
+        input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        /* Submit Button */
+        input[type="submit"] {
+            background-color: #1da1f2;
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* Display Data */
+        .data {
+            background-color: #ffffff;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 0 10px #cccccc;
+            text-align: left;
+            width: 100%;
+        }
+        
+
+        /* Data Labels */
+        .label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        /* Data Values */
+        .value {
+            font-size: 16px;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        /* Table Headings */
+        th {
+            background-color: #f2f2f2;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        /* Table Rows */
+        tr {
+            border-bottom: 1px solid #cccccc;
+        }
+
+        /* Table Data */
+        td {
+            padding: 10px;
+            font-size: 16px;
+        }
+        input{
+            border: thick solid black;
+            outline: auto;
+        }
+        label{
+            text-align: start;
+            text-transform: capitalize;
+            font-size: large;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Input Form -->
+        <form>
+            <label for="description">Spend Description:</label>
+
+            <input type="text" id="description" placeholder="Spend Description">
+
+            <label for="amount">Spend Amount:</label>
+
+            <input type="number" id="amount" placeholder="Spend Amount">
+
+            <label for="date">Date:</label>
+
+            <input type="date" id="date">
+            <input type="submit" value="Submit">
+        </form>
+
+        <!-- Display Data -->
+        <div class="data">
+            <div class="label">Total Spends:</div>
+            <div class="value" id="totalSpends"></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="expenseList">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <script>
+        // Get the form element
+        const form = document.querySelector("form");
+
+        // Get the total spend and expense list elements
+        const totalSpends = document.querySelector("#totalSpends");
+        const expenseList = document.querySelector("#expenseList");
+
+        // Array to store expenses
+        let expenses = [];
+
+        // Load expenses from local storage if available
+        if (localStorage.getItem("expenses")) {
+            expenses = JSON.parse(localStorage.getItem("expenses"));
+            updateExpenseList();
+            updateTotalSpends();
+        }
+
+        // Handle form submit
+        form.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            // Get the form input values
+            const description = document.querySelector("#description").value;
+            const amount = document.querySelector("#amount").value;
+            const date = document.querySelector("#date").value;
+
+            // Add the expense to the expenses array
+            expenses.push({
+                description: description,
+                amount: amount,
+                date: date
+            });
+
+            // Store the expenses array in local storage
+            localStorage.setItem("expenses", JSON.stringify(expenses));
+
+            // Update the expense list and total spends
+            updateExpenseList();
+            updateTotalSpends();
+        });
+
+        // Function to update the expense list
+        function updateExpenseList() {
+            // Clear the current expense list
+            expenseList.innerHTML = "";
+
+            // Loop through the expenses array and add a table row for each expense
+            expenses.forEach(function (expense, index) {
+                const row = document.createElement("tr");
+                row.innerHTML = `<td>${expense.description}</td><td>${expense.amount}</td><td>${expense.date}</td><td><button class="remove-button" data-index="${index}">Remove</button></td>`;
+                expenseList.appendChild(row);
+            });
+
+            // Add event listeners for the remove buttons
+            const removeButtons = document.querySelectorAll(".remove-button");
+            removeButtons.forEach(function (removeButton) {
+                removeButton.addEventListener("click", function (event) {
+                    const index = event.target.dataset.index;
+                    expenses.splice(index, 1);
+                    localStorage.setItem("expenses", JSON.stringify(expenses));
+                    updateExpenseList();
+                    updateTotalSpends();
+                });
+            });
+        }
+
+        function updateTotalSpends() {
+            let total = 0;
+            expenses.forEach(function (expense) {
+                total += parseFloat(expense.amount);
+            });
+            totalSpends.innerHTML = total.toFixed(2);
+        }
+
+    </script>
+</body>
+
+</html>
